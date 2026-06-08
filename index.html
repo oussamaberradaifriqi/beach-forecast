@@ -430,7 +430,8 @@
 
         // 5. Fetch Marine
         async function fetchMarine(lat, lon) {
-            const getUrl = (l, ln) => `https://marine-api.open-meteo.com/v1/marine?latitude=${l}&longitude=${ln}&hourly=wave_height`;
+            // Update to use the real sea_surface_temperature metric
+            const getUrl = (l, ln) => `https://marine-api.open-meteo.com/v1/marine?latitude=${l}&longitude=${ln}&hourly=wave_height,sea_surface_temperature`;
             
             const offsets = [
                 [0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05],
@@ -444,7 +445,8 @@
                     let probeRes = await fetch(getUrl(lat + dLat, lon + dLon));
                     if (probeRes.ok) {
                         const data = await probeRes.json();
-                        if (data.hourly && data.hourly.wave_height) return data;
+                        // Check if we got at least one of the required metrics
+                        if (data.hourly && (data.hourly.wave_height || data.hourly.sea_surface_temperature)) return data;
                     }
                 } catch (e) {}
             }
@@ -493,9 +495,17 @@
                 if (validWaves.length > 0) waveHeight = validWaves[0];
             }
 
-            const waterTempEstimate = estimateWaterTemp(latitude, airTemp);
+            // Extract REAL Sea Surface Temperature from the API
+            let realWaterTemp = null;
+            if (marine.hourly && marine.hourly.sea_surface_temperature) {
+                const validTemps = marine.hourly.sea_surface_temperature.filter(t => t !== null);
+                if (validTemps.length > 0) realWaterTemp = validTemps[0];
+            }
 
-            document.getElementById('val-water-temp').textContent = `${waterTempEstimate.toFixed(1)}°C`;
+            // Use real data, fallback to estimate ONLY if the API didn't return temp data for this spot
+            const finalWaterTemp = realWaterTemp !== null ? realWaterTemp : estimateWaterTemp(latitude, airTemp);
+
+            document.getElementById('val-water-temp').textContent = `${finalWaterTemp.toFixed(1)}°C`;
             document.getElementById('val-waves').textContent = `${waveHeight.toFixed(1)} m`;
             document.getElementById('val-air-temp').textContent = `${airTemp.toFixed(1)}°C`;
             document.getElementById('val-wind').textContent = `${windSpeed.toFixed(1)} km/h`;
@@ -515,7 +525,7 @@
                 document.documentElement.style.setProperty('--wave-speed-4', '30s');
             }
 
-            evaluateSwimmingConditions(waterTempEstimate, waveHeight, windSpeed);
+            evaluateSwimmingConditions(finalWaterTemp, waveHeight, windSpeed);
         }
 
         // 8. Logic
