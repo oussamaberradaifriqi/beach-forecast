@@ -291,6 +291,22 @@
                         <p id="val-wind" class="font-beach text-4xl text-sky-900">-- km/h</p>
                     </div>
                 </div>
+
+                <!-- Hourly Forecast Section -->
+                <div id="forecast-section" class="w-full mt-12 fade-in hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 px-2 gap-4">
+                        <h3 class="font-beach text-4xl text-sky-900 drop-shadow-sm">Hourly Forecast</h3>
+                        <div class="flex bg-white/40 backdrop-blur-md rounded-full p-1 border-2 border-white/60 shadow-sm">
+                            <button id="tab-today" class="px-6 py-2 rounded-full font-bold text-sky-900 bg-white shadow transition-all">Today</button>
+                            <button id="tab-tomorrow" class="px-6 py-2 rounded-full font-bold text-sky-700 hover:text-sky-900 transition-all">Tomorrow</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Scrollable Container -->
+                    <div id="hourly-container" class="flex overflow-x-auto gap-4 pb-6 pt-2 px-2 snap-x snap-mandatory">
+                        <!-- Cards injected here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -312,7 +328,16 @@
         const contentState = document.getElementById('content-state');
         const errorMessage = document.getElementById('error-message');
 
+        // Forecast Elements
+        const forecastSection = document.getElementById('forecast-section');
+        const hourlyContainer = document.getElementById('hourly-container');
+        const tabToday = document.getElementById('tab-today');
+        const tabTomorrow = document.getElementById('tab-tomorrow');
+
         let debounceTimer;
+        let globalWeather = null;
+        let globalMarine = null;
+        let globalLat = null;
 
         // Event Listeners
         searchInput.addEventListener('input', (e) => {
@@ -422,7 +447,7 @@
 
         // 4. Fetch Weather
         async function fetchWeather(lat, lon) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m&timezone=auto`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,wind_speed_10m&timezone=auto&forecast_days=2`;
             const res = await fetch(url);
             if (!res.ok) throw new Error("Weather API failed");
             return await res.json();
@@ -430,8 +455,8 @@
 
         // 5. Fetch Marine
         async function fetchMarine(lat, lon) {
-            // Update to use the real sea_surface_temperature metric
-            const getUrl = (l, ln) => `https://marine-api.open-meteo.com/v1/marine?latitude=${l}&longitude=${ln}&hourly=wave_height,sea_surface_temperature`;
+            // Update to use the real sea_surface_temperature metric and request 2 days of forecast
+            const getUrl = (l, ln) => `https://marine-api.open-meteo.com/v1/marine?latitude=${l}&longitude=${ln}&hourly=wave_height,sea_surface_temperature&timezone=auto&forecast_days=2`;
             
             const offsets = [
                 [0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05],
@@ -485,6 +510,12 @@
         function renderDetails(weather, marine, latitude) {
             loadingState.classList.add('hidden');
             contentState.classList.remove('hidden');
+            forecastSection.classList.remove('hidden');
+
+            // Store data globally for the Today/Tomorrow tabs
+            globalWeather = weather;
+            globalMarine = marine;
+            globalLat = latitude;
 
             const airTemp = weather.current.temperature_2m;
             const windSpeed = weather.current.wind_speed_10m;
@@ -526,9 +557,89 @@
             }
 
             evaluateSwimmingConditions(finalWaterTemp, waveHeight, windSpeed);
+            
+            // Render forecast for today by default
+            renderForecast(false);
         }
 
-        // 8. Logic
+        // 8. Forecast Logic
+        function renderForecast(isTomorrow) {
+            hourlyContainer.innerHTML = '';
+            
+            // Toggle active tabs styling
+            if (isTomorrow) {
+                tabTomorrow.classList.add('bg-white', 'shadow', 'text-sky-900');
+                tabTomorrow.classList.remove('text-sky-700');
+                tabToday.classList.remove('bg-white', 'shadow', 'text-sky-900');
+                tabToday.classList.add('text-sky-700');
+            } else {
+                tabToday.classList.add('bg-white', 'shadow', 'text-sky-900');
+                tabToday.classList.remove('text-sky-700');
+                tabTomorrow.classList.remove('bg-white', 'shadow', 'text-sky-900');
+                tabTomorrow.classList.add('text-sky-700');
+            }
+
+            // The API returns exactly 48 hours starting at midnight. 
+            // 0-23 is Today, 24-47 is Tomorrow.
+            const currentHour = new Date().getHours();
+            const startIdx = isTomorrow ? 24 : currentHour;
+            const endIdx = isTomorrow ? 47 : 23;
+
+            for (let i = startIdx; i <= endIdx; i++) {
+                // Extract time (e.g., "14:00")
+                const timeStr = globalWeather.hourly.time[i].split('T')[1];
+                const airTemp = globalWeather.hourly.temperature_2m[i];
+                const wind = globalWeather.hourly.wind_speed_10m[i];
+                
+                let wave = 0;
+                let waterTemp = estimateWaterTemp(globalLat, airTemp); // Physics fallback
+
+                // Check marine hourly array if available
+                if (globalMarine && globalMarine.hourly) {
+                    if (globalMarine.hourly.wave_height[i] !== null) {
+                        wave = globalMarine.hourly.wave_height[i];
+                    }
+                    if (globalMarine.hourly.sea_surface_temperature[i] !== null) {
+                        waterTemp = globalMarine.hourly.sea_surface_temperature[i];
+                    }
+                }
+
+                // Mini-suitability check for this specific hour
+                let hourEmoji = '🏖️';
+                if (waterTemp < 19 || wave > 1.2 || wind > 25) {
+                    hourEmoji = '🛑';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'glass-card min-w-[160px] p-5 flex flex-col items-center text-center snap-center shrink-0 group cursor-default transition-all hover:bg-white/80';
+                card.innerHTML = `
+                    <p class="font-black text-sky-800 text-lg mb-1 tracking-wider">${timeStr}</p>
+                    <div class="text-4xl mb-4 mt-2 group-hover:scale-125 transition-transform duration-300 drop-shadow-md">${hourEmoji}</div>
+                    
+                    <div class="flex flex-col gap-2 w-full">
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/50 px-2 py-1.5 rounded-lg">
+                            <span>🌊 Wave</span>
+                            <span>${wave.toFixed(1)}m</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/50 px-2 py-1.5 rounded-lg">
+                            <span>🌡️ Water</span>
+                            <span>${waterTemp.toFixed(1)}°</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/50 px-2 py-1.5 rounded-lg">
+                            <span>☀️ Air</span>
+                            <span>${airTemp.toFixed(1)}°</span>
+                        </div>
+                    </div>
+                `;
+                hourlyContainer.appendChild(card);
+            }
+        }
+
+        // Tab Event Listeners
+        tabToday.addEventListener('click', () => renderForecast(false));
+        tabTomorrow.addEventListener('click', () => renderForecast(true));
+
+        // 9. Logic
         function evaluateSwimmingConditions(waterTemp, waves, wind) {
             const banner = document.getElementById('suitability-banner');
             const title = document.getElementById('suitability-title');
