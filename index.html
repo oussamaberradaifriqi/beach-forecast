@@ -117,11 +117,11 @@
             border: 2px solid rgba(255, 255, 255, 0.8);
             box-shadow: 0 8px 32px -8px rgba(0,0,0,0.1);
             border-radius: 1.25rem;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
         .glass-card:hover {
             transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
@@ -144,9 +144,10 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
         /* Custom Scrollbars */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.4); border-radius: 10px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(245, 158, 11, 0.8); }
         
         /* Hide scrollbar for date tabs but keep functionality */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -203,92 +204,97 @@
         </div>
     </div>
 
-    <!-- VIEW 2: DETAILS SCREEN -->
-    <div id="details-view" class="hidden min-h-screen p-4 md:p-8 flex-col items-center relative z-10 pb-24">
-        <div class="w-full max-w-5xl">
+    <!-- VIEW 2: DETAILS SCREEN (Now expanded width) -->
+    <!-- Changed max-w-5xl to max-w-[1600px] and w-full for full-screen utilization -->
+    <div id="details-view" class="hidden min-h-screen p-4 md:p-8 flex-col items-center relative z-10 pb-28">
+        <div class="w-full max-w-[1600px]">
+            
             <!-- Navigation -->
-            <button id="back-btn" class="flex items-center text-sky-900 hover:text-amber-600 font-bold mb-6 transition-colors group bg-white/50 hover:bg-white/80 px-4 py-2 rounded-full backdrop-blur-md border-2 border-white/60 shadow-md text-sm">
+            <button id="back-btn" class="flex items-center text-sky-900 hover:text-amber-600 font-bold mb-6 transition-colors group bg-white/50 hover:bg-white/80 px-5 py-2.5 rounded-full backdrop-blur-md border-2 border-white/60 shadow-md">
                 <i data-lucide="arrow-left" class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform"></i>
                 Back to Map
             </button>
 
             <!-- States -->
-            <div id="loading-state" class="hidden flex-col items-center justify-center py-20 glass-panel">
+            <div id="loading-state" class="hidden flex-col items-center justify-center py-32 glass-panel">
                 <div class="loader mb-4"></div>
-                <p class="text-sky-900 font-bold animate-pulse">Catching the latest waves...</p>
+                <p class="text-sky-900 font-bold animate-pulse text-xl">Catching the latest waves...</p>
             </div>
 
-            <div id="error-state" class="hidden glass-panel p-8 text-center max-w-xl mx-auto mt-6">
-                <div class="text-5xl mb-3">🌵</div>
-                <h2 class="font-beach text-3xl text-amber-800 mb-2">No Ocean Here!</h2>
-                <p id="error-message" class="text-sky-900 font-semibold">This location appears to be inland.</p>
+            <div id="error-state" class="hidden glass-panel p-10 text-center max-w-2xl mx-auto mt-10">
+                <div class="text-6xl mb-4">🌵</div>
+                <h2 class="font-beach text-4xl text-amber-800 mb-2">No Ocean Here!</h2>
+                <p id="error-message" class="text-sky-900 font-semibold text-lg">This location appears to be inland.</p>
             </div>
 
             <!-- Content -->
             <div id="content-state" class="hidden fade-in">
                 
-                <!-- Header with Favorite Toggle -->
-                <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 glass-panel p-6">
-                    <div class="flex items-center justify-center md:justify-start gap-4">
-                        <div class="text-center md:text-left">
-                            <h2 id="city-name" class="font-beach text-4xl md:text-5xl text-sky-900 drop-shadow-sm">City</h2>
-                            <div class="flex items-center justify-center md:justify-start text-sky-700 font-bold mt-1">
-                                <i data-lucide="map-pin" class="w-4 h-4 mr-1 text-amber-500"></i>
-                                <span id="city-country">Country</span>
+                <!-- Layout Grid for Header & Banner -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                    <!-- Header with Favorite Toggle -->
+                    <div class="xl:col-span-1 flex flex-col justify-center gap-4 glass-panel p-6">
+                        <div class="flex items-start justify-between w-full">
+                            <div>
+                                <h2 id="city-name" class="font-beach text-5xl md:text-6xl text-sky-900 drop-shadow-sm leading-tight">City</h2>
+                                <div class="flex items-center text-sky-700 font-bold mt-2 text-lg">
+                                    <i data-lucide="map-pin" class="w-5 h-5 mr-1.5 text-amber-500"></i>
+                                    <span id="city-country">Country</span>
+                                </div>
                             </div>
+                            <button id="toggle-favorite-btn" class="p-3 rounded-full bg-white/50 hover:bg-white/90 transition shadow-sm border border-white">
+                                <i data-lucide="heart" id="fav-icon" class="w-8 h-8 text-rose-500 transition-colors"></i>
+                            </button>
                         </div>
-                        <button id="toggle-favorite-btn" class="p-2 rounded-full bg-white/40 hover:bg-white/80 transition shadow-sm border border-white">
-                            <i data-lucide="heart" id="fav-icon" class="w-7 h-7 text-rose-500 transition-colors"></i>
-                        </button>
+                    </div>
+
+                    <!-- Suitability Banner -->
+                    <div id="suitability-banner" class="xl:col-span-2 glass-panel p-6 flex items-center flex-col sm:flex-row gap-6 transition-all duration-500 border-[3px]">
+                        <div id="suitability-icon" class="text-6xl shrink-0 drop-shadow-md hover:scale-110 transition-transform"></div>
+                        <div class="text-center sm:text-left">
+                            <h3 id="suitability-title" class="font-beach text-4xl mb-2 tracking-wide"></h3>
+                            <p id="suitability-reason" class="text-xl font-semibold"></p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Suitability Banner -->
-                <div id="suitability-banner" class="glass-panel p-6 mb-6 flex items-center flex-col sm:flex-row gap-5 transition-all duration-500 border-[3px]">
-                    <div id="suitability-icon" class="text-5xl shrink-0 drop-shadow-md hover:scale-110 transition-transform"></div>
-                    <div class="text-center sm:text-left">
-                        <h3 id="suitability-title" class="font-beach text-3xl mb-1 tracking-wide"></h3>
-                        <p id="suitability-reason" class="text-lg font-semibold"></p>
+                <!-- Current Data Grid (Now expands beautifully) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-card p-6 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">💧</div>
+                        <p class="text-sm text-sky-700 font-black uppercase tracking-wider mb-1">Water Temp</p>
+                        <p id="val-water-temp" class="font-beach text-4xl text-sky-900">--°C</p>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">🏄</div>
+                        <p class="text-sm text-sky-700 font-black uppercase tracking-wider mb-1">Wave Height</p>
+                        <p id="val-waves" class="font-beach text-4xl text-sky-900">-- m</p>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">☀️</div>
+                        <p class="text-sm text-sky-700 font-black uppercase tracking-wider mb-1">Air Temp</p>
+                        <p id="val-air-temp" class="font-beach text-4xl text-sky-900">--°C</p>
+                    </div>
+                    <div class="glass-card p-6 flex flex-col items-center text-center">
+                        <div class="text-4xl mb-2">💨</div>
+                        <p class="text-sm text-sky-700 font-black uppercase tracking-wider mb-1">Wind Speed</p>
+                        <p id="val-wind" class="font-beach text-4xl text-sky-900">-- km/h</p>
                     </div>
                 </div>
 
-                <!-- Current Data Grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="glass-card p-4 flex flex-col items-center text-center">
-                        <div class="text-3xl mb-1">🌡️</div>
-                        <p class="text-xs text-sky-700 font-black uppercase tracking-wider mb-0.5">Water</p>
-                        <p id="val-water-temp" class="font-beach text-2xl text-sky-900">--°C</p>
-                    </div>
-                    <div class="glass-card p-4 flex flex-col items-center text-center">
-                        <div class="text-3xl mb-1">🌊</div>
-                        <p class="text-xs text-sky-700 font-black uppercase tracking-wider mb-0.5">Waves</p>
-                        <p id="val-waves" class="font-beach text-2xl text-sky-900">-- m</p>
-                    </div>
-                    <div class="glass-card p-4 flex flex-col items-center text-center">
-                        <div class="text-3xl mb-1">☀️</div>
-                        <p class="text-xs text-sky-700 font-black uppercase tracking-wider mb-0.5">Air Temp</p>
-                        <p id="val-air-temp" class="font-beach text-2xl text-sky-900">--°C</p>
-                    </div>
-                    <div class="glass-card p-4 flex flex-col items-center text-center">
-                        <div class="text-3xl mb-1">💨</div>
-                        <p class="text-xs text-sky-700 font-black uppercase tracking-wider mb-0.5">Wind</p>
-                        <p id="val-wind" class="font-beach text-2xl text-sky-900">-- km/h</p>
-                    </div>
-                </div>
-
-                <!-- 7-Day Forecast Section -->
-                <div id="forecast-section" class="w-full mt-8 fade-in hidden glass-panel p-4 md:p-6">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                        <h3 class="font-beach text-3xl text-sky-900 drop-shadow-sm">Forecast</h3>
+                <!-- 7-Day Forecast Section (Full Width, better UI cards) -->
+                <div id="forecast-section" class="w-full mt-8 fade-in hidden glass-panel p-6 lg:p-8">
+                    <div class="flex flex-col lg:flex-row justify-between items-center mb-6 gap-6">
+                        <h3 class="font-beach text-4xl text-sky-900 drop-shadow-sm shrink-0">Detailed Forecast</h3>
                         
                         <!-- Dynamic Date Tabs Container -->
-                        <div id="date-tabs-container" class="flex overflow-x-auto w-full md:w-auto bg-white/40 backdrop-blur-md rounded-full p-1 border-2 border-white/60 shadow-sm no-scrollbar space-x-1">
+                        <div id="date-tabs-container" class="flex overflow-x-auto w-full lg:w-auto bg-white/40 backdrop-blur-md rounded-full p-1.5 border-2 border-white/60 shadow-sm no-scrollbar space-x-1">
                             <!-- Tabs injected dynamically -->
                         </div>
                     </div>
                     
                     <!-- Hourly Cards Container -->
-                    <div id="hourly-container" class="flex overflow-x-auto gap-3 pb-4 pt-1 snap-x snap-mandatory">
+                    <div id="hourly-container" class="flex overflow-x-auto gap-4 pb-6 pt-2 snap-x snap-mandatory">
                         <!-- Cards injected here -->
                     </div>
                 </div>
@@ -321,9 +327,8 @@
         let globalWeather = null;
         let globalMarine = null;
         let currentCityData = null;
-        let activeDateString = null; 
         
-        // --- 1. LOCAL STORAGE / FAVORITES LOGIC ---
+        // --- LOCAL STORAGE / FAVORITES LOGIC ---
         function getFavorites() {
             return JSON.parse(localStorage.getItem('beachVibesFavorites') || '[]');
         }
@@ -339,10 +344,10 @@
             const existsIndex = favs.findIndex(f => f.latitude === currentCityData.latitude && f.longitude === currentCityData.longitude);
             
             if (existsIndex > -1) {
-                favs.splice(existsIndex, 1); // Remove
+                favs.splice(existsIndex, 1);
                 favIcon.classList.remove('fill-rose-500');
             } else {
-                favs.push(currentCityData); // Add
+                favs.push(currentCityData);
                 favIcon.classList.add('fill-rose-500');
             }
             saveFavorites(favs);
@@ -351,11 +356,8 @@
         function checkIsFavorite(city) {
             const favs = getFavorites();
             const isFav = favs.some(f => f.latitude === city.latitude && f.longitude === city.longitude);
-            if (isFav) {
-                favIcon.classList.add('fill-rose-500');
-            } else {
-                favIcon.classList.remove('fill-rose-500');
-            }
+            if (isFav) favIcon.classList.add('fill-rose-500');
+            else favIcon.classList.remove('fill-rose-500');
         }
 
         function renderFavoritesHome() {
@@ -373,8 +375,8 @@
             
             favs.forEach(fav => {
                 const btn = document.createElement('button');
-                btn.className = 'bg-white/60 hover:bg-white border-2 border-white shadow-sm backdrop-blur-sm rounded-full px-4 py-2 text-sky-900 font-bold transition-all text-sm flex items-center';
-                btn.innerHTML = `🌊 ${fav.name} <span class="text-sky-600 text-xs ml-1 font-semibold">${fav.country || ''}</span>`;
+                btn.className = 'bg-white/60 hover:bg-white border-2 border-white shadow-sm backdrop-blur-sm rounded-full px-5 py-2.5 text-sky-900 font-bold transition-all text-sm flex items-center';
+                btn.innerHTML = `🌊 ${fav.name} <span class="text-sky-600 text-xs ml-1.5 font-semibold">${fav.country || ''}</span>`;
                 btn.onclick = () => loadCityProfile(fav, true);
                 container.appendChild(btn);
             });
@@ -382,13 +384,10 @@
 
         toggleFavBtn.addEventListener('click', toggleFavorite);
 
-        // --- 2. BROWSER HISTORY (BACK BUTTON) LOGIC ---
+        // --- BROWSER HISTORY LOGIC ---
         window.addEventListener('popstate', (e) => {
-            if (e.state && e.state.city) {
-                loadCityProfile(e.state.city, false); // false = don't push state again
-            } else {
-                showSearchView();
-            }
+            if (e.state && e.state.city) loadCityProfile(e.state.city, false);
+            else showSearchView();
         });
 
         function showSearchView() {
@@ -403,8 +402,7 @@
             document.documentElement.style.setProperty('--wave-speed-2', '10s');
             document.documentElement.style.setProperty('--wave-speed-3', '13s');
             document.documentElement.style.setProperty('--wave-speed-4', '20s');
-            
-            renderFavoritesHome(); // Refresh home favorites
+            renderFavoritesHome();
         }
 
         backBtn.addEventListener('click', () => {
@@ -412,8 +410,7 @@
             showSearchView();
         });
 
-
-        // --- 3. SEARCH & FETCH LOGIC ---
+        // --- SEARCH & FETCH LOGIC ---
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const query = e.target.value.trim();
@@ -436,7 +433,7 @@
                 const data = await res.json();
                 if (data.results && data.results.length > 0) renderSearchResults(data.results);
                 else {
-                    searchResults.innerHTML = `<div class="p-4 text-sky-800 font-bold text-center text-sm">No beaches found. 🏝️</div>`;
+                    searchResults.innerHTML = `<div class="p-5 text-sky-800 font-bold text-center">No beaches found. 🏝️</div>`;
                     searchResults.classList.remove('hidden');
                 }
             } catch (err) { console.error(err); }
@@ -446,9 +443,9 @@
             searchResults.innerHTML = '';
             cities.forEach(city => {
                 const div = document.createElement('div');
-                div.className = 'px-5 py-3 hover:bg-sky-100 cursor-pointer border-b border-sky-50 last:border-0 flex flex-col transition-colors';
-                div.innerHTML = `<span class="font-extrabold text-sky-900 text-lg">${city.name}</span>
-                                 <span class="text-xs text-amber-600 font-bold">${city.admin1 ? city.admin1 + ', ' : ''}${city.country}</span>`;
+                div.className = 'px-6 py-4 hover:bg-sky-100 cursor-pointer border-b border-sky-50 last:border-0 flex flex-col transition-colors';
+                div.innerHTML = `<span class="font-extrabold text-sky-900 text-xl">${city.name}</span>
+                                 <span class="text-sm text-amber-600 font-bold">${city.admin1 ? city.admin1 + ', ' : ''}${city.country}</span>`;
                 div.addEventListener('click', () => {
                     searchResults.classList.add('hidden');
                     loadCityProfile(city, true);
@@ -458,11 +455,9 @@
             searchResults.classList.remove('hidden');
         }
 
-        // --- 4. DETAILS VIEW & API PROCESSING ---
+        // --- DETAILS VIEW ---
         async function loadCityProfile(city, pushHistory = true) {
-            if (pushHistory) {
-                history.pushState({ city: city }, "", `?location=${encodeURIComponent(city.name)}`);
-            }
+            if (pushHistory) history.pushState({ city: city }, "", `?location=${encodeURIComponent(city.name)}`);
             currentCityData = city;
             
             searchView.classList.add('hidden');
@@ -478,7 +473,6 @@
             checkIsFavorite(city);
 
             try {
-                // Requested 7 days forecast for more data
                 const [weatherData, marineData] = await Promise.all([
                     fetchWeather(city.latitude, city.longitude),
                     fetchMarine(city.latitude, city.longitude)
@@ -553,22 +547,15 @@
             document.getElementById('val-air-temp').textContent = `${airTemp.toFixed(1)}°C`;
             document.getElementById('val-wind').textContent = `${windSpeed.toFixed(1)} km/h`;
 
-            // Evaluate banner
             evaluateSwimmingConditions(finalWaterTemp, waveHeight, windSpeed);
-
-            // Generate Dynamic Tabs for the next 7 days
             generateForecastTabs();
         }
 
-        // --- 5. DYNAMIC FORECAST & TABS ---
+        // --- DYNAMIC FORECAST & TABS ---
         function generateForecastTabs() {
             dateTabsContainer.innerHTML = '';
             const times = globalWeather.hourly.time;
-            
-            // Extract unique dates (YYYY-MM-DD)
             const uniqueDates = [...new Set(times.map(t => t.split('T')[0]))];
-            
-            const todayStr = new Date().toISOString().split('T')[0];
             let dateSelected = false;
 
             uniqueDates.forEach((dateStr, index) => {
@@ -577,12 +564,10 @@
                 
                 if (index === 0) label = 'Today';
                 else if (index === 1) label = 'Tomorrow';
-                else {
-                    label = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                }
+                else label = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
 
                 const btn = document.createElement('button');
-                btn.className = 'tab-btn px-4 py-1.5 rounded-full font-bold transition-all text-sm whitespace-nowrap shrink-0 text-sky-700 hover:text-sky-900';
+                btn.className = 'tab-btn px-6 py-2 rounded-full font-bold transition-all text-[15px] whitespace-nowrap shrink-0 text-sky-700 hover:text-sky-900';
                 btn.textContent = label;
                 btn.dataset.date = dateStr;
                 
@@ -597,12 +582,7 @@
                 });
 
                 dateTabsContainer.appendChild(btn);
-
-                // Auto-click the first tab
-                if(!dateSelected) {
-                    btn.click();
-                    dateSelected = true;
-                }
+                if(!dateSelected) { btn.click(); dateSelected = true; }
             });
         }
 
@@ -610,22 +590,16 @@
             hourlyContainer.innerHTML = '';
             
             const allTimes = globalWeather.hourly.time;
-            // Filter indexes that match the requested date
             const hourIndexes = allTimes.reduce((acc, time, idx) => {
                 if (time.startsWith(dateString)) acc.push(idx);
                 return acc;
             }, []);
 
-            // If it's today, we might only want from the current hour forward
             const currentHourISO = new Date().toISOString().substring(0,13); 
             
             hourIndexes.forEach(i => {
                 const timeRaw = allTimes[i];
-                
-                // Skip past hours for "Today" to save space
-                if (timeRaw.split('T')[0] === new Date().toISOString().split('T')[0] && timeRaw < currentHourISO+":00") {
-                    return; 
-                }
+                if (timeRaw.split('T')[0] === new Date().toISOString().split('T')[0] && timeRaw < currentHourISO+":00") return; 
 
                 const timeStr = timeRaw.split('T')[1];
                 const airTemp = globalWeather.hourly.temperature_2m[i];
@@ -639,24 +613,45 @@
                     if (globalMarine.hourly.sea_surface_temperature[i] !== null) waterTemp = globalMarine.hourly.sea_surface_temperature[i];
                 }
 
+                // Determine condition description & emoji
+                let conditionText = "Perfect Swim";
+                let conditionColor = "text-emerald-600";
                 let hourEmoji = '🏖️';
-                if (waterTemp < 19 || wave > 1.2 || wind > 25) hourEmoji = '🛑';
+                
+                if (waterTemp < 19 || wave > 1.2 || wind > 25) {
+                    hourEmoji = '🛑';
+                    conditionColor = "text-rose-600";
+                    if(wave > 1.2) conditionText = "Rough Waves";
+                    else if(waterTemp < 19) conditionText = "Too Cold";
+                    else if(wind > 25) conditionText = "Too Windy";
+                }
 
                 const card = document.createElement('div');
-                card.className = 'glass-card min-w-[140px] p-4 flex flex-col items-center text-center snap-center shrink-0 transition-all hover:bg-white/90';
+                // Wider card, better padding, high quality look
+                card.className = 'glass-card min-w-[210px] p-5 flex flex-col items-center snap-center shrink-0 transition-all';
                 card.innerHTML = `
-                    <p class="font-black text-sky-800 text-md mb-1">${timeStr}</p>
-                    <div class="text-3xl mb-3 mt-1 drop-shadow-md">${hourEmoji}</div>
+                    <div class="w-full flex justify-between items-center mb-1">
+                        <span class="font-black text-sky-900 text-xl tracking-wide">${timeStr}</span>
+                        <span class="text-3xl drop-shadow-sm" title="${conditionText}">${hourEmoji}</span>
+                    </div>
+                    <p class="text-[11px] font-black uppercase tracking-wider w-full text-left mb-4 ${conditionColor}">${conditionText}</p>
                     
-                    <div class="flex flex-col gap-1.5 w-full">
-                        <div class="flex justify-between items-center text-xs font-bold text-sky-900 bg-white/60 px-2 py-1 rounded">
-                            <span>🌊</span> <span>${wave.toFixed(1)}m</span>
+                    <div class="flex flex-col gap-2 w-full">
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/60 px-3 py-2 rounded-lg border border-white/50 shadow-sm">
+                            <span class="flex items-center gap-2"><span class="text-base">☀️</span> Air</span> 
+                            <span>${airTemp.toFixed(1)}°</span>
                         </div>
-                        <div class="flex justify-between items-center text-xs font-bold text-sky-900 bg-white/60 px-2 py-1 rounded">
-                            <span>🌡️</span> <span>${waterTemp.toFixed(1)}°</span>
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/60 px-3 py-2 rounded-lg border border-white/50 shadow-sm">
+                            <span class="flex items-center gap-2"><span class="text-base">💧</span> Water</span> 
+                            <span>${waterTemp.toFixed(1)}°</span>
                         </div>
-                        <div class="flex justify-between items-center text-xs font-bold text-sky-900 bg-white/60 px-2 py-1 rounded">
-                            <span>💨</span> <span>${wind.toFixed(0)}</span>
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/60 px-3 py-2 rounded-lg border border-white/50 shadow-sm">
+                            <span class="flex items-center gap-2"><span class="text-base">🏄</span> Waves</span> 
+                            <span>${wave.toFixed(1)}m</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-bold text-sky-900 bg-white/60 px-3 py-2 rounded-lg border border-white/50 shadow-sm">
+                            <span class="flex items-center gap-2"><span class="text-base">💨</span> Wind</span> 
+                            <span>${wind.toFixed(0)} <span class="text-[10px] text-sky-700 font-extrabold">km/h</span></span>
                         </div>
                     </div>
                 `;
@@ -678,23 +673,22 @@
             if (wind > 25) { isSuitable = false; reasonsList.push(`Heavy wind (${wind.toFixed(0)}km/h).`); }
 
             if (isSuitable) {
-                banner.className = "glass-panel p-5 mb-6 flex items-center flex-col sm:flex-row gap-4 border-[3px] border-emerald-400 bg-emerald-50/70";
+                banner.className = "xl:col-span-2 glass-panel p-6 flex items-center flex-col sm:flex-row gap-6 border-[3px] border-emerald-400 bg-emerald-50/70";
                 title.textContent = "Grab your surfboard!";
-                title.className = "font-beach text-3xl mb-1 text-emerald-700";
+                title.className = "font-beach text-4xl mb-1 text-emerald-700";
                 reason.textContent = `Perfect beach day! Nice water and gentle waves.`;
-                reason.className = "text-emerald-900 text-md font-bold";
+                reason.className = "text-emerald-900 text-xl font-bold";
                 iconContainer.innerHTML = `🏖️`;
             } else {
-                banner.className = "glass-panel p-5 mb-6 flex items-center flex-col sm:flex-row gap-4 border-[3px] border-rose-400 bg-rose-50/70";
+                banner.className = "xl:col-span-2 glass-panel p-6 flex items-center flex-col sm:flex-row gap-6 border-[3px] border-rose-400 bg-rose-50/70";
                 title.textContent = "Maybe chill on the sand.";
-                title.className = "font-beach text-3xl mb-1 text-rose-700";
+                title.className = "font-beach text-4xl mb-1 text-rose-700";
                 reason.textContent = `${reasonsList.join(" ")}`;
-                reason.className = "text-rose-900 text-md font-bold";
+                reason.className = "text-rose-900 text-xl font-bold";
                 iconContainer.innerHTML = `🛑`;
             }
         }
 
-        // Initialize Favorites on Load
         renderFavoritesHome();
     </script>
 </body>
